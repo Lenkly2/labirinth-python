@@ -1,4 +1,6 @@
 from pygame import *
+import time as tm
+from random import randint
 class Wall(sprite.Sprite):
     def __init__(self, color_1, color_2, color_3, wall_x, wall_y, wall_width, wall_height):
         super().__init__()
@@ -51,6 +53,16 @@ class Object(sprite.Sprite):
             self.rect.y = self.rect.y + self.speed
             if sprite.collide_rect(player,wall) or sprite.collide_rect(player,wall2) or sprite.collide_rect(player,wall3) or sprite.collide_rect(player,wall4) or sprite.collide_rect(player,wall5) or sprite.collide_rect(player,wall6) or sprite.collide_rect(player,wall7) or sprite.collide_rect(player,wall8) or sprite.collide_rect(player,wall9) or sprite.collide_rect(player,wall10) or sprite.collide_rect(player,wall11) or sprite.collide_rect(player,walllock) or sprite.collide_rect(player,walllock2):
                 self.rect.y = self.rect.y - self.speed
+    def player_move2(self):
+        keys = key.get_pressed()
+        if keys[K_a] and self.rect.x > 0:
+            self.rect.x = self.rect.x - self.speed
+        if keys[K_d] and self.rect.x < 950:
+            self.rect.x = self.rect.x + self.speed
+        if keys[K_w] and self.rect.y > 0:
+            self.rect.y = self.rect.y - self.speed
+        if keys[K_s] and self.rect.y < 550:
+            self.rect.y = self.rect.y + self.speed
     def fire(self):
         bullet = Bullet('bullet.png',self.rect.centerx,self.rect.centery,15,15,10)
         bullets.add(bullet)
@@ -105,7 +117,46 @@ class Bullet(Object):
         if self.rect.x > 1000:
             self.kill()
 
-window = display.set_mode((1000,600))
+menu = display.set_mode((500,500))
+display.set_caption("labirint")
+start_button = Rect(200,100,100,50)
+exit_button = Rect(200,200,100,50)
+setting_button = Rect(200,300,100,50)
+font.init()
+menu_font = font.SysFont('Arial',40)
+menuxxxx = True
+while menuxxxx:
+    for e in event.get():
+        if e.type == QUIT:
+            menuxxxx = False
+            game = False
+        elif e.type == MOUSEBUTTONDOWN and e.button == 1:
+            if exit_button.collidepoint(mouse.get_pos()):
+                menuxxxx = False
+                game = False
+            elif start_button.collidepoint(mouse.get_pos()):
+                menuxxxx = False
+                game = True
+
+    menu.fill((0,0,0))
+    draw.rect(menu,(55,55,55),start_button)
+    draw.rect(menu,(55,55,55),exit_button)
+    draw.rect(menu,(55,55,55),setting_button)
+    start_text = menu_font.render("start",True,(255,255,255))
+    exit_text = menu_font.render("exit",True,(255,255,255))
+    setttings_text = menu_font.render("settings",True,(255,255,255))
+    menu.blit(start_text,(start_button.x,start_button.y))
+    menu.blit(exit_text,(exit_button.x,exit_button.y))
+    menu.blit(setttings_text,(setting_button.x,setting_button.y))
+    display.update()
+
+display.quit()
+display.init()
+
+###
+displayx = 1000
+displayy = 600
+window = display.set_mode((displayx,displayy))
 picture = transform.scale(image.load('background.jpg'),(1000,600))
 player = Object('hero.png',100,400,50,50,5)
 enemy = Object('cyborg.png',150,50,150,150,5)
@@ -133,22 +184,25 @@ wall8 = Wall(0,0,0,710,200,25,225)
 wall9 = Wall(0,0,0,805,0,25,200)
 wall10 = Wall(0,0,0,150,400,25,200)
 wall11 = Wall(0,0,0,150,200,200,25)
-walllock = Wall(0,255,255,1950,400,25,200)
-walllock2 = Wall(0,255,255,1600,225,25,225)
+walllock = Wall(0,255,255,950,400,25,200)
+walllock2 = Wall(0,255,255,600,225,25,225)
 health = 3
 level = 1
 death = 0
+onei = 1
+enemy_hp = 100
 boss_definded = 0
+tg = tm.monotonic()
 clock = time.Clock()
-
-game = True
 while game:
     for e in event.get():
         if e.type == QUIT:
             game = False
         if e.type == KEYDOWN:
             if e.key == K_e:
-                player.fire()
+                if level == 3:
+                    player.fire()
+            
     if level == 1:
         window.blit(picture,(0,0))
         player.reset()
@@ -300,9 +354,10 @@ while game:
                 death = 0
                 player.speed = 5
                 Key.rect.x = 750
-                Key2.rect.x = 750
+                Key2.rect.x = 300
+                Key.rect.y = 75
                 walllock.rect.x = 950
-                walllock2.rect.x = 550
+                walllock2 = Wall(255,255,0,700,200,100,25)
                 enemy.direction = 'right'
                 player.reset()
                 
@@ -321,8 +376,14 @@ while game:
     if level == 3:
         window.blit(picture,(0,0))
         player.reset()
-        player.move()
+        player.player_move2()
+        enemy2 = Object('cyborg.png',500,200,300,300,5)
         enemy2.reset()
+        if onei == 1:
+            wall = Wall(0,0,0,1200,0,50,displayy)
+            wall2 = Wall(0,0,0,1200,0,50,displayy)
+            wall3 = Wall(0,0,0,1200,0,50,displayy)
+            onei = 0
         if health ==3:
             window.blit(heart1,(25,50))
             window.blit(heart2,(50,50))
@@ -332,10 +393,9 @@ while game:
             window.blit(heart2,(50,50))
         if health ==1:
             window.blit(heart1,(25,50))
-
-        wall.rect.x = 1000
-        wall2.rect.x = 1000
-        wall3.rect.x = 1000
+        if enemy_hp <= 0:
+            boss_definded = 1
+        
         wall4.rect.x = 1000
         wall5.rect.x = 1000
         wall6.rect.x = 1000
@@ -346,15 +406,27 @@ while game:
         wall11.rect.x = 1000
         walllock.rect.x = 1000
         walllock2.rect.x = 1000
+        wall.draw_wall()
+        wall2.draw_wall()
+        wall3.draw_wall()
         Key.rect.x = 1000
-
         bullets.update()
         bullets.draw(window)
-
+    
+        if tm.monotonic() - tg > 5:
+            tg = tm.monotonic()
+            randomx = randint(5,900)
+            randomx2 = randint(5,900)
+            randomx3 = randint(5,900)
+            wall.rect.x = randomx
+            wall2.rect.x = randomx2
+            wall3.rect.x = randomx3
+        if sprite.spritecollide(enemy2,bullets,True):
+            enemy_hp -=1
         if sprite.collide_rect(player,enemy2):
             health -= 1
             if health > 0:
-                player.rect.x -= 30
+                player.rect.x -= 40
             if health <= 0:
                 player.speed = 0
                 gover.reset()
@@ -367,18 +439,18 @@ while game:
                     health = 3
 
             
-            if boss_definded == 1: 
-                
-                player.speed = 0
-                if player.speed == 0:
-                    gwin.reset()
+        if boss_definded == 1: 
+            player.speed = 0
+            if player.speed == 0:
+                gwin.reset()
                     
-                window.blit(nxlevel,(0,0))
-                if nxlevel.get_rect().collidepoint(mouse.get_pos()):
-                    player.speed = 5
-                    level = 3
-                    player.rect.x = 100
-                    player.rect.y = 400
+            window.blit(nxlevel,(0,0))
+            if nxlevel.get_rect().collidepoint(mouse.get_pos()):
+                enemy_hp = 100
+                boss_definded = 0
+                player.speed = 5
+                player.rect.x = 100
+                player.rect.y = 400
 
     display.update()
     clock.tick(60)
